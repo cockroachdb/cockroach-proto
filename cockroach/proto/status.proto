@@ -1,0 +1,29 @@
+syntax = "proto2";
+
+package cockroach.proto;
+
+option go_package = "proto";
+
+// StoreStatus contains the stats needed to calculate the current status of a
+//  store.
+//  TODO(bram): add significantly more statistics.
+message StoreStatus {
+  // The storeID for this store.
+  optional int32 store_id = 1;
+  // The node id associated with this store.
+  optional int32 node_id = 2;
+  // A list of the raft_ids (ranges) available through this store.
+  repeated int64 raft_ids = 3;
+  // Time based statistics.
+  //  The last time this was updated, note that this is not the time it was 
+  //  written to the DB, but when this measurement was taken.
+  optional int64 updated_at = 4;
+  // The last time this node was started.
+  optional int64 started_at = 5;
+  // Size based statistics.
+  //  The number of bytes currently being used by this store.
+  optional int64 used_bytes = 6;
+  // The maximum number of bytes available.
+  optional int64 max_bytes = 7;
+}
+

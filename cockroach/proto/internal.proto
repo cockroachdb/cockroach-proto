@@ -154,53 +154,72 @@ message InternalTruncateLogResponse {
   optional .cockroach.proto.ResponseHeader header = 1;
 }
 
+// An InternalLeaderLeaseRequest is arguments to the InternalLeaderLease()
+//  method. It is sent by the store on behalf of one of its ranges upon receipt
+//  of a leader election event for that range.
+message InternalLeaderLeaseRequest {
+  optional .cockroach.proto.RequestHeader header = 1;
+  optional .cockroach.proto.Lease lease = 2;
+}
+
+// An InternalLeaderLeaseResponse is the response to an InternalLeaderLease()
+//  operation.
+message InternalLeaderLeaseResponse {
+  optional .cockroach.proto.ResponseHeader header = 1;
+}
+
 // A ReadWriteCmdResponse is a union type containing instances of all
 //  mutating commands. Note that any entry added here must be handled
 //  in storage/engine/db.cc in GetResponseHeader().
 message ReadWriteCmdResponse {
-  optional .cockroach.proto.PutResponse put = 1;
-  optional .cockroach.proto.ConditionalPutResponse conditional_put = 2;
-  optional .cockroach.proto.IncrementResponse increment = 3;
-  optional .cockroach.proto.DeleteResponse delete = 4;
-  optional .cockroach.proto.DeleteRangeResponse delete_range = 5;
-  optional .cockroach.proto.EndTransactionResponse end_transaction = 6;
-  optional .cockroach.proto.ReapQueueResponse reap_queue = 7;
-  optional .cockroach.proto.EnqueueUpdateResponse enqueue_update = 8;
-  optional .cockroach.proto.EnqueueMessageResponse enqueue_message = 9;
-  optional .cockroach.proto.InternalHeartbeatTxnResponse internal_heartbeat_txn = 10;
-  optional .cockroach.proto.InternalPushTxnResponse internal_push_txn = 11;
-  optional .cockroach.proto.InternalResolveIntentResponse internal_resolve_intent = 12;
-  optional .cockroach.proto.InternalMergeResponse internal_merge = 13;
-  optional .cockroach.proto.InternalTruncateLogResponse internal_truncate_log = 14;
-  optional .cockroach.proto.InternalGCResponse internal_gc = 15;
+   oneof value {
+    .cockroach.proto.PutResponse put = 1;
+    .cockroach.proto.ConditionalPutResponse conditional_put = 2;
+    .cockroach.proto.IncrementResponse increment = 3;
+    .cockroach.proto.DeleteResponse delete = 4;
+    .cockroach.proto.DeleteRangeResponse delete_range = 5;
+    .cockroach.proto.EndTransactionResponse end_transaction = 6;
+    .cockroach.proto.ReapQueueResponse reap_queue = 7;
+    .cockroach.proto.EnqueueUpdateResponse enqueue_update = 8;
+    .cockroach.proto.EnqueueMessageResponse enqueue_message = 9;
+    .cockroach.proto.InternalHeartbeatTxnResponse internal_heartbeat_txn = 10;
+    .cockroach.proto.InternalPushTxnResponse internal_push_txn = 11;
+    .cockroach.proto.InternalResolveIntentResponse internal_resolve_intent = 12;
+    .cockroach.proto.InternalMergeResponse internal_merge = 13;
+    .cockroach.proto.InternalTruncateLogResponse internal_truncate_log = 14;
+    .cockroach.proto.InternalGCResponse internal_gc = 15;
+  }
 }
 
 // An InternalRaftCommandUnion is the union of all commands which can be
 //  sent via raft.
 message InternalRaftCommandUnion {
-  // Non-batched external requests. This section is the same as RequestUnion.
-  optional .cockroach.proto.ContainsRequest contains = 1;
-  optional .cockroach.proto.GetRequest get = 2;
-  optional .cockroach.proto.PutRequest put = 3;
-  optional .cockroach.proto.ConditionalPutRequest conditional_put = 4;
-  optional .cockroach.proto.IncrementRequest increment = 5;
-  optional .cockroach.proto.DeleteRequest delete = 6;
-  optional .cockroach.proto.DeleteRangeRequest delete_range = 7;
-  optional .cockroach.proto.ScanRequest scan = 8;
-  optional .cockroach.proto.EndTransactionRequest end_transaction = 9;
-  optional .cockroach.proto.ReapQueueRequest reap_queue = 10;
-  optional .cockroach.proto.EnqueueUpdateRequest enqueue_update = 11;
-  optional .cockroach.proto.EnqueueMessageRequest enqueue_message = 12;
-  // Other requests. Allow a gap in tag numbers so the previous list can
-  //  be copy/pasted from RequestUnion.
-  optional .cockroach.proto.BatchRequest batch = 30;
-  optional .cockroach.proto.InternalRangeLookupRequest internal_range_lookup = 31;
-  optional .cockroach.proto.InternalHeartbeatTxnRequest internal_heartbeat_txn = 32;
-  optional .cockroach.proto.InternalPushTxnRequest internal_push_txn = 33;
-  optional .cockroach.proto.InternalResolveIntentRequest internal_resolve_intent = 34;
-  optional .cockroach.proto.InternalMergeRequest internal_merge_response = 35;
-  optional .cockroach.proto.InternalTruncateLogRequest internal_truncate_log = 36;
-  optional .cockroach.proto.InternalGCRequest internal_gc = 37;
+   oneof value {
+    // Non-batched external requests. This section is the same as RequestUnion.
+    .cockroach.proto.ContainsRequest contains = 1;
+    .cockroach.proto.GetRequest get = 2;
+    .cockroach.proto.PutRequest put = 3;
+    .cockroach.proto.ConditionalPutRequest conditional_put = 4;
+    .cockroach.proto.IncrementRequest increment = 5;
+    .cockroach.proto.DeleteRequest delete = 6;
+    .cockroach.proto.DeleteRangeRequest delete_range = 7;
+    .cockroach.proto.ScanRequest scan = 8;
+    .cockroach.proto.EndTransactionRequest end_transaction = 9;
+    .cockroach.proto.ReapQueueRequest reap_queue = 10;
+    .cockroach.proto.EnqueueUpdateRequest enqueue_update = 11;
+    .cockroach.proto.EnqueueMessageRequest enqueue_message = 12;
+    // Other requests. Allow a gap in tag numbers so the previous list can
+    //  be copy/pasted from RequestUnion.
+    .cockroach.proto.BatchRequest batch = 30;
+    .cockroach.proto.InternalRangeLookupRequest internal_range_lookup = 31;
+    .cockroach.proto.InternalHeartbeatTxnRequest internal_heartbeat_txn = 32;
+    .cockroach.proto.InternalPushTxnRequest internal_push_txn = 33;
+    .cockroach.proto.InternalResolveIntentRequest internal_resolve_intent = 34;
+    .cockroach.proto.InternalMergeRequest internal_merge_response = 35;
+    .cockroach.proto.InternalTruncateLogRequest internal_truncate_log = 36;
+    .cockroach.proto.InternalGCRequest internal_gc = 37;
+    .cockroach.proto.InternalLeaderLeaseRequest internal_lease = 38;
+  }
 }
 
 // An InternalRaftCommand is a command which can be serialized and
@@ -208,6 +227,23 @@ message InternalRaftCommandUnion {
 message InternalRaftCommand {
   optional int64 raft_id = 2;
   optional .cockroach.proto.InternalRaftCommandUnion cmd = 3;
+}
+
+// RaftMessageRequest is the request used to send raft messages using our
+//  protobuf-based RPC codec. Unlike most of the requests defined in this file
+//  and api.proto, this one is implemented in a separate service defined in
+//  server/transport.go.
+//  This is the equivalent of the non-protobuf multiraft.RaftMessageRequest.
+message RaftMessageRequest {
+  optional uint64 group_id = 1;
+  // The raft payload, an encoded raftpb.Message. We transmit the message as
+  //  an opaque blob to avoid the complexity of importing proto files across
+  //  packages.
+  optional bytes msg = 2;
+}
+
+// RaftMessageResponse is an empty message returned by raft RPCs.
+message RaftMessageResponse {
 }
 
 // InternalTimeSeriesData is a collection of data samples for some measurable
@@ -281,5 +317,25 @@ message InternalTimeSeriesSample {
   optional float float_max = 8;
   // Minimum encountered floating point measurement in this sample.
   optional float float_min = 9;
+}
+
+// RaftTruncatedState contains metadata about the truncated portion of the raft log.
+//  Raft requires access to the term of the last truncated log entry even after the
+//  rest of the entry has been discarded.
+message RaftTruncatedState {
+  // The highest index that has been removed from the log.
+  optional uint64 index = 1;
+  // The term corresponding to 'index'.
+  optional uint64 term = 2;
+}
+
+// RaftSnapshotData is the payload of a raftpb.Snapshot. It contains a raw copy of
+//  all of the range's data and metadata, including the raft log, response cache, etc.
+message RaftSnapshotData {
+  message KeyValue {
+    optional bytes key = 1;
+    optional bytes value = 2;
+  }
+  repeated .cockroach.proto.RaftSnapshotData.KeyValue KV = 1;
 }
 

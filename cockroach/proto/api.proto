@@ -7,6 +7,22 @@ package cockroach.proto;
 
 option go_package = "proto";
 
+// ReadConsistencyType specifies what type of consistency is observed
+//  during read operations.
+enum ReadConsistencyType {
+  // CONSISTENT reads are guaranteed to read committed data; the
+  //  mechanism relies on clocks to determine lease expirations.
+  CONSISTENT = 0;
+  // CONSENSUS requires that reads must achieve consensus. This is a
+  //  stronger guarantee of consistency than CONSISTENT.
+  //  TODO(spencer): current unimplemented.
+  CONSENSUS = 1;
+  // INCONSISTENT reads return the latest available, committed values.
+  //  They are more efficient, but may read stale values as pending
+  //  intents are ignored.
+  INCONSISTENT = 2;
+}
+
 // ClientCmdID provides a unique ID for client commands. Clients which
 //  provide ClientCmdID gain operation idempotence. In other words,
 //  clients can submit the same command multiple times and always
@@ -67,6 +83,10 @@ message RequestHeader {
   //  fully-initialized transaction with txn ID, priority, initial
   //  timestamp, and maximum timestamp.
   optional .cockroach.proto.Transaction txn = 9;
+  // ReadConsistency specifies the consistency for read
+  //  operations. The default is CONSISTENT. This value is ignored for
+  //  write operations.
+  optional .cockroach.proto.ReadConsistencyType read_consistency = 10;
 }
 
 // ResponseHeader is returned with every storage node response.
@@ -148,8 +168,8 @@ message ConditionalPutResponse {
 //  increments the value for key, and returns the new value. If no
 //  value exists for a key, incrementing by 0 is not a noop, but will
 //  create a zero value. IncrementRequest cannot be called on a key set
-//  by Put() or ConditionalPut(). Similarly, Get(), Put() and
-//  ConditionalPut() cannot be invoked on an incremented key.
+//  by Put() or ConditionalPut(). Similarly, Put() and ConditionalPut()
+//  cannot be invoked on an incremented key.
 message IncrementRequest {
   optional .cockroach.proto.RequestHeader header = 1;
   optional int64 increment = 2;
@@ -231,6 +251,8 @@ message EndTransactionResponse {
   optional .cockroach.proto.ResponseHeader header = 1;
   // Remaining time (ns).
   optional int64 commit_wait = 2;
+  // List of intents resolved by EndTransaction call.
+  repeated bytes resolved = 3;
 }
 
 // A ReapQueueRequest is arguments to the ReapQueue() method. It
@@ -281,34 +303,38 @@ message EnqueueMessageResponse {
 
 // A RequestUnion contains exactly one of the optional requests.
 message RequestUnion {
-  optional .cockroach.proto.ContainsRequest contains = 1;
-  optional .cockroach.proto.GetRequest get = 2;
-  optional .cockroach.proto.PutRequest put = 3;
-  optional .cockroach.proto.ConditionalPutRequest conditional_put = 4;
-  optional .cockroach.proto.IncrementRequest increment = 5;
-  optional .cockroach.proto.DeleteRequest delete = 6;
-  optional .cockroach.proto.DeleteRangeRequest delete_range = 7;
-  optional .cockroach.proto.ScanRequest scan = 8;
-  optional .cockroach.proto.EndTransactionRequest end_transaction = 9;
-  optional .cockroach.proto.ReapQueueRequest reap_queue = 10;
-  optional .cockroach.proto.EnqueueUpdateRequest enqueue_update = 11;
-  optional .cockroach.proto.EnqueueMessageRequest enqueue_message = 12;
+   oneof value {
+    .cockroach.proto.ContainsRequest contains = 1;
+    .cockroach.proto.GetRequest get = 2;
+    .cockroach.proto.PutRequest put = 3;
+    .cockroach.proto.ConditionalPutRequest conditional_put = 4;
+    .cockroach.proto.IncrementRequest increment = 5;
+    .cockroach.proto.DeleteRequest delete = 6;
+    .cockroach.proto.DeleteRangeRequest delete_range = 7;
+    .cockroach.proto.ScanRequest scan = 8;
+    .cockroach.proto.EndTransactionRequest end_transaction = 9;
+    .cockroach.proto.ReapQueueRequest reap_queue = 10;
+    .cockroach.proto.EnqueueUpdateRequest enqueue_update = 11;
+    .cockroach.proto.EnqueueMessageRequest enqueue_message = 12;
+  }
 }
 
 // A ResponseUnion contains exactly one of the optional responses.
 message ResponseUnion {
-  optional .cockroach.proto.ContainsResponse contains = 1;
-  optional .cockroach.proto.GetResponse get = 2;
-  optional .cockroach.proto.PutResponse put = 3;
-  optional .cockroach.proto.ConditionalPutResponse conditional_put = 4;
-  optional .cockroach.proto.IncrementResponse increment = 5;
-  optional .cockroach.proto.DeleteResponse delete = 6;
-  optional .cockroach.proto.DeleteRangeResponse delete_range = 7;
-  optional .cockroach.proto.ScanResponse scan = 8;
-  optional .cockroach.proto.EndTransactionResponse end_transaction = 9;
-  optional .cockroach.proto.ReapQueueResponse reap_queue = 10;
-  optional .cockroach.proto.EnqueueUpdateResponse enqueue_update = 11;
-  optional .cockroach.proto.EnqueueMessageResponse enqueue_message = 12;
+   oneof value {
+    .cockroach.proto.ContainsResponse contains = 1;
+    .cockroach.proto.GetResponse get = 2;
+    .cockroach.proto.PutResponse put = 3;
+    .cockroach.proto.ConditionalPutResponse conditional_put = 4;
+    .cockroach.proto.IncrementResponse increment = 5;
+    .cockroach.proto.DeleteResponse delete = 6;
+    .cockroach.proto.DeleteRangeResponse delete_range = 7;
+    .cockroach.proto.ScanResponse scan = 8;
+    .cockroach.proto.EndTransactionResponse end_transaction = 9;
+    .cockroach.proto.ReapQueueResponse reap_queue = 10;
+    .cockroach.proto.EnqueueUpdateResponse enqueue_update = 11;
+    .cockroach.proto.EnqueueMessageResponse enqueue_message = 12;
+  }
 }
 
 // A BatchRequest contains one or more requests to be executed in
@@ -358,16 +384,16 @@ message AdminSplitResponse {
 }
 
 // An AdminMergeRequest is arguments to the AdminMerge() method. A
-//  merge is always performed by calling AdminMerge on the range
-//  that is subsuming the passed in subsumed_range. The ranges must
-//  be consecutive in the key space, such that the end_key of the
-//  subsuming range must match the start_key of the range being subsumed.
-//  After the merge operation, the subsumed_range will no longer exist and
-//  the subsuming range will now encompass all keys from its original
-//  start_key to the end_key of the subsumed_range.
+//  merge is performed by calling AdminMerge on the left-hand range of
+//  two consecutive ranges (i.e. the range which contains keys which
+//  sort first). This range will be the subsuming range and the right
+//  hand range will be subsumed. After the merge operation, the
+//  subsumed_range will no longer exist and the subsuming range will
+//  now encompass all keys from its original start key to the end key
+//  of the subsumed range. If AdminMerge is called on the final range
+//  in the key space, it is a noop.
 message AdminMergeRequest {
   optional .cockroach.proto.RequestHeader header = 1;
-  optional .cockroach.proto.RangeDescriptor subsumed_range = 2;
 }
 
 // An AdminMergeResponse is the return value from the AdminMerge()
