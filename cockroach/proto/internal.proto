@@ -179,9 +179,6 @@ message ReadWriteCmdResponse {
     .cockroach.proto.DeleteResponse delete = 4;
     .cockroach.proto.DeleteRangeResponse delete_range = 5;
     .cockroach.proto.EndTransactionResponse end_transaction = 6;
-    .cockroach.proto.ReapQueueResponse reap_queue = 7;
-    .cockroach.proto.EnqueueUpdateResponse enqueue_update = 8;
-    .cockroach.proto.EnqueueMessageResponse enqueue_message = 9;
     .cockroach.proto.InternalHeartbeatTxnResponse internal_heartbeat_txn = 10;
     .cockroach.proto.InternalPushTxnResponse internal_push_txn = 11;
     .cockroach.proto.InternalResolveIntentResponse internal_resolve_intent = 12;
@@ -205,9 +202,6 @@ message InternalRaftCommandUnion {
     .cockroach.proto.DeleteRangeRequest delete_range = 7;
     .cockroach.proto.ScanRequest scan = 8;
     .cockroach.proto.EndTransactionRequest end_transaction = 9;
-    .cockroach.proto.ReapQueueRequest reap_queue = 10;
-    .cockroach.proto.EnqueueUpdateRequest enqueue_update = 11;
-    .cockroach.proto.EnqueueMessageRequest enqueue_message = 12;
     // Other requests. Allow a gap in tag numbers so the previous list can
     //  be copy/pasted from RequestUnion.
     .cockroach.proto.BatchRequest batch = 30;

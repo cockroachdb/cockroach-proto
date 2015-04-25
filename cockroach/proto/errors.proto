@@ -137,7 +137,7 @@ message ErrorDetail {
   }
 }
 
-// Error is a generic represesentation including a string message
+// Error is a generic representation including a string message
 //  and information about retryability.
 message Error {
   // Message is a human-readable error message.

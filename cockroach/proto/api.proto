@@ -255,52 +255,6 @@ message EndTransactionResponse {
   repeated bytes resolved = 3;
 }
 
-// A ReapQueueRequest is arguments to the ReapQueue() method. It
-//  specifies the recipient inbox key to which messages are waiting
-//  to be reapted and also the maximum number of results to return.
-message ReapQueueRequest {
-  optional .cockroach.proto.RequestHeader header = 1;
-  // Maximum results to return; must be > 0.
-  optional int64 max_results = 2;
-}
-
-// A ReapQueueResponse is the return value from the ReapQueue() method.
-message ReapQueueResponse {
-  optional .cockroach.proto.ResponseHeader header = 1;
-  repeated .cockroach.proto.Value messages = 2;
-}
-
-// An EnqueueUpdateRequest is arguments to the EnqueueUpdate() method.
-//  It specifies the update to enqueue for asynchronous execution.
-//  Update is an instance of one of the following messages: PutRequest,
-//  IncrementRequest, DeleteRequest, DeleteRangeRequest, or
-//  AccountingRequest.
-message EnqueueUpdateRequest {
-  optional .cockroach.proto.RequestHeader header = 1;
-  // TODO(spencer): add union type here.
-}
-
-// An EnqueueUpdateResponse is the return value from the
-//  EnqueueUpdate() method.
-message EnqueueUpdateResponse {
-  optional .cockroach.proto.ResponseHeader header = 1;
-}
-
-// An EnqueueMessageRequest is arguments to the EnqueueMessage() method.
-//  It specifies the recipient inbox key and the message (an arbitrary
-//  byte slice value).
-message EnqueueMessageRequest {
-  optional .cockroach.proto.RequestHeader header = 1;
-  // Message value to delivery to inbox.
-  optional .cockroach.proto.Value msg = 2;
-}
-
-// An EnqueueMessageResponse is the return value from the
-//  EnqueueMessage() method.
-message EnqueueMessageResponse {
-  optional .cockroach.proto.ResponseHeader header = 1;
-}
-
 // A RequestUnion contains exactly one of the optional requests.
 message RequestUnion {
    oneof value {
@@ -313,9 +267,6 @@ message RequestUnion {
     .cockroach.proto.DeleteRangeRequest delete_range = 7;
     .cockroach.proto.ScanRequest scan = 8;
     .cockroach.proto.EndTransactionRequest end_transaction = 9;
-    .cockroach.proto.ReapQueueRequest reap_queue = 10;
-    .cockroach.proto.EnqueueUpdateRequest enqueue_update = 11;
-    .cockroach.proto.EnqueueMessageRequest enqueue_message = 12;
   }
 }
 
@@ -331,15 +282,14 @@ message ResponseUnion {
     .cockroach.proto.DeleteRangeResponse delete_range = 7;
     .cockroach.proto.ScanResponse scan = 8;
     .cockroach.proto.EndTransactionResponse end_transaction = 9;
-    .cockroach.proto.ReapQueueResponse reap_queue = 10;
-    .cockroach.proto.EnqueueUpdateResponse enqueue_update = 11;
-    .cockroach.proto.EnqueueMessageResponse enqueue_message = 12;
   }
 }
 
 // A BatchRequest contains one or more requests to be executed in
 //  parallel, or if applicable (based on write-only commands and
 //  range-locality), as a single update.
+//  The RequestHeader should contain the Key of the first request
+//  in the batch.
 message BatchRequest {
   optional .cockroach.proto.RequestHeader header = 1;
   repeated .cockroach.proto.RequestUnion requests = 2;
