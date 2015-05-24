@@ -124,6 +124,13 @@ message ConditionFailedError {
   optional .cockroach.proto.Value actual_value = 1;
 }
 
+// A LeaseRejectedError indicates that the requested replica could
+//  not acquire the desired lease because of an existing leader lease.
+message LeaseRejectedError {
+  optional .cockroach.proto.Lease Requested = 1;
+  optional .cockroach.proto.Lease Existing = 2;
+}
+
 // ErrorDetail is a union type containing all available errors.
 message ErrorDetail {
    oneof value {
@@ -139,6 +146,7 @@ message ErrorDetail {
     .cockroach.proto.WriteTooOldError write_too_old = 10;
     .cockroach.proto.OpRequiresTxnError op_requires_txn = 11;
     .cockroach.proto.ConditionFailedError condition_failed = 12;
+    .cockroach.proto.LeaseRejectedError lease_rejected = 13;
   }
 }
 

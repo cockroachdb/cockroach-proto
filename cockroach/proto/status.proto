@@ -15,9 +15,12 @@ message StoreStatus {
   optional int64 started_at = 4;
   optional int64 updated_at = 5;
   optional .cockroach.proto.MVCCStats stats = 6;
+  optional int32 leader_range_count = 7;
+  optional int32 replicated_range_count = 8;
+  optional int32 available_range_count = 9;
 }
 
-// NodeStatus contains the stats needed to calculate the current status of a 
+// NodeStatus contains the stats needed to calculate the current status of a
 //  node.
 message NodeStatus {
   optional .cockroach.proto.NodeDescriptor desc = 1;
@@ -26,5 +29,8 @@ message NodeStatus {
   optional int64 started_at = 4;
   optional int64 updated_at = 5;
   optional .cockroach.proto.MVCCStats stats = 6;
+  optional int32 leader_range_count = 7;
+  optional int32 replicated_range_count = 8;
+  optional int32 available_range_count = 9;
 }
 

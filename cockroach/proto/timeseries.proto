@@ -1,0 +1,69 @@
+syntax = "proto2";
+
+package cockroach.proto;
+
+option go_package = "proto";
+
+// TimeSeriesDatapoint is a single point of time series data; a value associated
+//  with a timestamp.
+message TimeSeriesDatapoint {
+  // The timestamp when this datapoint is located, expressed in nanoseconds
+  //  since the unix epoch.
+  optional int64 timestamp_nanos = 1;
+  // A floating point representation of the value of this datapoint.
+  optional double value = 2;
+}
+
+// TimeSeriesData is a set of measurements of a single named variable at
+//  multiple points in time. This message contains a name and a source which, in
+//  combination, uniquely identify the time series being measured. Measurement
+//  data is represented as a repeated set of TimeSeriesDatapoint messages.
+message TimeSeriesData {
+  // A string which uniquely identifies the variable from which this data was
+  //  measured.
+  optional string name = 1;
+  // A string which identifies the unique source from which the variable was measured.
+  optional string source = 2;
+  // Datapoints representing one or more measurements taken from the variable.
+  repeated .cockroach.proto.TimeSeriesDatapoint datapoints = 3;
+}
+
+// TimeSeriesQueryRequest is the standard incoming time series query request
+//  accepted from cockroach clients.
+message TimeSeriesQueryRequest {
+  // Each Query defines a specific metric to query over the time span of
+  //  this request.
+  message Query {
+    // The name of the time series to query.
+    optional string name = 1;
+  }
+  // A timestamp in nanoseconds which defines the early bound of the time span
+  //  for this query.
+  optional int64 start_nanos = 1;
+  // A timestamp in nanoseconds which defines the late bound of the time span
+  //  for this query. Must be greater than start_nanos.
+  optional int64 end_nanos = 2;
+  // A set of Queries for this request. A request must have at least one
+  //  Query.
+  repeated .cockroach.proto.TimeSeriesQueryRequest.Query queries = 3;
+}
+
+// TimeSeriesQueryResponse is the standard response for time series queries
+//  returned to cockroach clients.
+message TimeSeriesQueryResponse {
+  // Result is the data returned from a single metric query over a time span.
+  message Result {
+    // A string which uniquely identifies the variable from which this data was
+    //  measured.
+    optional string name = 1;
+    // A list of sources from which the data was aggregated.
+    repeated string sources = 2;
+    // Datapoints describing the queried data.
+    repeated .cockroach.proto.TimeSeriesDatapoint datapoints = 3;
+  }
+  // A set of Results; there will be one result for each Query in the matching
+  //  TimeSeriesQueryRequest, in the same order. A Result will be present for
+  //  each Query even if there are zero datapoints to return.
+  repeated .cockroach.proto.TimeSeriesQueryResponse.Result results = 1;
+}
+

@@ -56,13 +56,13 @@ message Timestamp {
 //  basic types: a "bag o' bytes" generic byte slice and an incrementable
 //  int64, for use with the Increment API call.
 message Value {
-  // Bytes is the byte slice value. If this field is set, the integer field
-  //  should not be.
-  optional bytes bytes = 1;
-  // Integer is an integer value type. If this field is set, the bytes field
-  //  should not be. Only Integer values may exist at a key when making the
-  //  Increment API call.
-  optional int64 integer = 2;
+   oneof value {
+    // Bytes is the byte slice value.
+    bytes bytes = 1;
+    // Integer is an integer value type. Only Integer values may exist at a key
+    //  when making the Increment API call.
+    int64 integer = 2;
+  }
   // Checksum is a CRC-32-IEEE checksum of the key + value, in that order.
   //  If this is an integer value, then the value is interpreted as an 8
   //  byte, big-endian encoded value. This value is set by the client on
@@ -253,35 +253,6 @@ message GCMetadata {
   optional int64 oldest_intent_nanos = 2;
 }
 
-// TimeSeriesDatapoint is a single point of time series data; a value associated
-//  with a timestamp.
-message TimeSeriesDatapoint {
-  // The timestamp when this datapoint is located, expressed in nanoseconds
-  //  since the unix epoch.
-  optional int64 timestamp_nanos = 1;
-  // An integer representation of the value of this datapoint. If this field
-  //  is set, then 'float_value' must not be set.
-  optional int64 int_value = 2;
-  // A floating point representation of the value of this datapoint. If this
-  //  field is set, then 'int_value' must not be set.
-  optional float float_value = 3;
-}
-
-// TimeSeriesData is a set of observations of a single variable value at
-//  multiple points in time. This message contains a name and a source which, in
-//  combination, uniquely identify the series being measured. The message also
-//  contains a repeated set of TimeSeriesDatapoint messages representing distinct
-//  measurements of the variable.
-message TimeSeriesData {
-  // A string which uniquely identifies the variable from which this data was
-  //  measured.
-  optional string name = 1;
-  // A string which identifies the unique source from which the variable was measured.
-  optional string source = 2;
-  // Datapoints representing one or more measurements taken from the variable.
-  repeated .cockroach.proto.TimeSeriesDatapoint datapoints = 3;
-}
-
 // MVCCStats tracks byte and instance counts for:
 //   - Live key/values (i.e. what a scan at current time will reveal;
 //     note that this includes intent keys and values, but not keys and
@@ -291,6 +262,7 @@ message TimeSeriesData {
 //   - Key count (count of all keys, including keys with deleted tombstones)
 //   - Value count (all versions, including deleted tombstones)
 //   - Intents (provisional values written during txns)
+//   - System-local key counts and byte totals
 message MVCCStats {
   optional int64 live_bytes = 1;
   optional int64 key_bytes = 2;
@@ -302,6 +274,8 @@ message MVCCStats {
   optional int64 intent_count = 8;
   optional int64 intent_age = 9;
   optional int64 gc_bytes_age = 10;
-  optional int64 last_update_nanos = 11;
+  optional int64 sys_bytes = 12;
+  optional int64 sys_count = 13;
+  optional int64 last_update_nanos = 30;
 }
 

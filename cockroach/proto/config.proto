@@ -82,8 +82,8 @@ message RangeTree {
 
 // RangeTreeNode holds the configuration for each node of the Red-Black Tree that references all ranges.
 message RangeTreeNode {
-  // Using gogoproto's marshaler is needed here as there is a bug in the default 
-  //  marshalling using reflection that does not handle the Key custom type as 
+  // Using gogoproto's marshaler is needed here as there is a bug in the default
+  //  marshalling using reflection that does not handle the Key custom type as
   //  nullable correctly.
   optional bytes key = 1;
   // Color is black if true, red if false.
@@ -94,7 +94,7 @@ message RangeTreeNode {
   optional bytes right_key = 5;
 }
 
-// Addr holds any network address. It is structurally similar to net.Addr 
+// Addr holds any network address. It is structurally similar to net.Addr
 //  however String is replaced with Address so the proto will compile.
 message Addr {
   optional string network = 1;
@@ -105,6 +105,7 @@ message Addr {
 message StoreCapacity {
   optional int64 Capacity = 1;
   optional int64 Available = 2;
+  optional int32 RangeCount = 3;
 }
 
 // NodeDescriptor holds details on node physical/network topology.
@@ -114,7 +115,7 @@ message NodeDescriptor {
   optional .cockroach.proto.Attributes attrs = 3;
 }
 
-// StoreDescriptor holds store information including store attributes, node 
+// StoreDescriptor holds store information including store attributes, node
 //  descriptor and store capacity.
 message StoreDescriptor {
   optional int32 store_id = 1;

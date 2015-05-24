@@ -18,14 +18,13 @@ enum PushTxnType {
   CLEANUP_TXN = 2;
 }
 
-// InternalValueType defines a set of string constants placed in the "tag" field
-//  of Value messages which are created internally. These are defined as a
-//  protocol buffer enumeration so that they can be used portably between our Go
-//  and C code.
+// InternalValueType defines a set of string constants placed in the
+//  "tag" field of Value messages which are created internally. These
+//  are defined as a protocol buffer enumeration so that they can be
+//  used portably between our Go and C code. The tags are used by the
+//  RocksDB Merge Operator to perform specialized merges.
 enum InternalValueType {
-  // _CR_TS is applied to values which contain InternalTimeSeriesData. This
-  //  tag is used by the RocksDB Merge Operator to perform a specialized merge
-  //  for this data.
+  // _CR_TS is applied to values which contain InternalTimeSeriesData.
   _CR_TS = 1;
 }
 
@@ -148,6 +147,19 @@ message InternalResolveIntentResponse {
   optional .cockroach.proto.ResponseHeader header = 1;
 }
 
+// An InternalResolveIntentRangeRequest is arguments to the
+//  InternalResolveIntentRange() method. This clear write intents
+//  for a range of keys to resolve intents created by range ops.
+message InternalResolveIntentRangeRequest {
+  optional .cockroach.proto.RequestHeader header = 1;
+}
+
+// An InternalResolveIntentRangeResponse is the return value from the
+//  InternalResolveIntent() method.
+message InternalResolveIntentRangeResponse {
+  optional .cockroach.proto.ResponseHeader header = 1;
+}
+
 // An InternalMergeRequest contains arguments to the InternalMerge() method. It
 //  specifies a key and a value which should be merged into the existing value at
 //  that key.
@@ -206,6 +218,7 @@ message InternalRequestUnion {
     .cockroach.proto.EndTransactionRequest end_transaction = 9;
     .cockroach.proto.InternalPushTxnRequest internal_push_txn = 30;
     .cockroach.proto.InternalResolveIntentRequest internal_resolve_intent = 31;
+    .cockroach.proto.InternalResolveIntentRangeRequest internal_resolve_intent_range = 32;
   }
 }
 
@@ -224,6 +237,7 @@ message InternalResponseUnion {
     .cockroach.proto.EndTransactionResponse end_transaction = 9;
     .cockroach.proto.InternalPushTxnResponse internal_push_txn = 30;
     .cockroach.proto.InternalResolveIntentResponse internal_resolve_intent = 31;
+    .cockroach.proto.InternalResolveIntentRangeResponse internal_resolve_intent_range = 32;
   }
 }
 
@@ -256,10 +270,11 @@ message ReadWriteCmdResponse {
     .cockroach.proto.InternalHeartbeatTxnResponse internal_heartbeat_txn = 10;
     .cockroach.proto.InternalPushTxnResponse internal_push_txn = 11;
     .cockroach.proto.InternalResolveIntentResponse internal_resolve_intent = 12;
-    .cockroach.proto.InternalMergeResponse internal_merge = 13;
-    .cockroach.proto.InternalTruncateLogResponse internal_truncate_log = 14;
-    .cockroach.proto.InternalGCResponse internal_gc = 15;
-    .cockroach.proto.InternalLeaderLeaseResponse internal_leader_lease = 16;
+    .cockroach.proto.InternalResolveIntentRangeResponse internal_resolve_intent_range = 13;
+    .cockroach.proto.InternalMergeResponse internal_merge = 14;
+    .cockroach.proto.InternalTruncateLogResponse internal_truncate_log = 15;
+    .cockroach.proto.InternalGCResponse internal_gc = 16;
+    .cockroach.proto.InternalLeaderLeaseResponse internal_leader_lease = 17;
   }
 }
 
@@ -284,11 +299,12 @@ message InternalRaftCommandUnion {
     .cockroach.proto.InternalHeartbeatTxnRequest internal_heartbeat_txn = 32;
     .cockroach.proto.InternalPushTxnRequest internal_push_txn = 33;
     .cockroach.proto.InternalResolveIntentRequest internal_resolve_intent = 34;
-    .cockroach.proto.InternalMergeRequest internal_merge_response = 35;
-    .cockroach.proto.InternalTruncateLogRequest internal_truncate_log = 36;
-    .cockroach.proto.InternalGCRequest internal_gc = 37;
-    .cockroach.proto.InternalLeaderLeaseRequest internal_lease = 38;
-    .cockroach.proto.InternalBatchRequest internal_batch = 39;
+    .cockroach.proto.InternalResolveIntentRangeRequest internal_resolve_intent_range = 35;
+    .cockroach.proto.InternalMergeRequest internal_merge_response = 36;
+    .cockroach.proto.InternalTruncateLogRequest internal_truncate_log = 37;
+    .cockroach.proto.InternalGCRequest internal_gc = 38;
+    .cockroach.proto.InternalLeaderLeaseRequest internal_lease = 39;
+    .cockroach.proto.InternalBatchRequest internal_batch = 40;
   }
 }
 
@@ -359,35 +375,20 @@ message InternalTimeSeriesData {
 //  entirely from any collection it would be a part of.
 //  If the count of measurements is 1, then max and min fields may be omitted
 //  and assumed equal to the sum field.
-//  The variable being measured may be either an integer or a floating point;
-//  therefore, there are two fields each for "sum", "max" and "min" to hold
-//  either an integer or floating point number. In practice, only one set of
-//  these fields should be present for any individual sample; however, int and
-//  float values are recorded in parallel, allowing clients to write both floats
-//  and integers to the same value. These are recorded separately to retain
-//  precision, but are easily combined by higher-level logic at query time.
 message InternalTimeSeriesSample {
   // Temporal offset from the "start_timestamp" of the InternalTimeSeriesData
   //  collection this data point is part in. The units of this value are
   //  determined by the value of the "sample_duration_milliseconds" field of
   //  the TimeSeriesData collection.
   optional int32 offset = 1;
-  // Count of integer measurements taken within this sample.
-  optional uint32 int_count = 2;
-  // Sum of all integer measurements.
-  optional int64 int_sum = 3;
-  // Maximum encountered integer measurement in this sample.
-  optional int64 int_max = 4;
-  // Minimum encountered integer measurement in this sample.
-  optional int64 int_min = 5;
-  // Count of floating point measurements taken within this sample.
-  optional uint32 float_count = 6;
-  // Sum of all floating point measurements.
-  optional float float_sum = 7;
-  // Maximum encountered floating point measurement in this sample.
-  optional float float_max = 8;
-  // Minimum encountered floating point measurement in this sample.
-  optional float float_min = 9;
+  // Count of measurements taken within this sample.
+  optional uint32 count = 6;
+  // Sum of all measurements.
+  optional double sum = 7;
+  // Maximum encountered measurement in this sample.
+  optional double max = 8;
+  // Minimum encountered measurement in this sample.
+  optional double min = 9;
 }
 
 // RaftTruncatedState contains metadata about the truncated portion of the raft log.

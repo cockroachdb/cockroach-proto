@@ -1,0 +1,38 @@
+syntax = "proto2";
+
+package cockroach.proto;
+
+option go_package = "proto";
+
+// Log represents a cockroach structured log entry.
+message LogEntry {
+  // Log format arguments.
+  message Arg {
+    optional string type = 1;
+    optional string str = 2;
+    // Optional json representation.
+    optional bytes json = 3;
+  }
+  // Log message severity.
+  optional int32 severity = 1;
+  // Time, measured in nanoseconds since the epoch.
+  optional int64 time = 2;
+  // Thread id of logging routine.
+  optional int32 thread_id = 3;
+  // File which generated log statement.
+  optional string file = 4;
+  // Line in file which generated log statement.
+  optional int32 line = 5;
+  // Log format message.
+  optional string format = 6;
+  repeated .cockroach.proto.LogEntry.Arg args = 7;
+  // Optional parameters which may be set with log entry.
+  optional int32 node_id = 8;
+  optional int32 store_id = 9;
+  optional int64 raft_id = 10;
+  optional int32 method = 11;
+  optional bytes key = 12;
+  // Stack traces if requested.
+  optional bytes stacks = 13;
+}
+
