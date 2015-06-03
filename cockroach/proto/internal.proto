@@ -107,17 +107,22 @@ message InternalGCResponse {
 message InternalPushTxnRequest {
   optional .cockroach.proto.RequestHeader header = 1;
   optional .cockroach.proto.Transaction pushee_txn = 2;
+  // Now holds the timestamp used to compare the last heartbeat of the pushee
+  //  against. This is necessary since the request header's timestamp does not
+  //  necessarily advance with the node clock across retries and hence cannot
+  //  detect abandoned transactions.
+  optional .cockroach.proto.Timestamp now = 3;
   // Readers set this to PUSH_TIMESTAMP to move PusheeTxn's commit
   //  timestamp forward. Writers set this to ABORT_TXN to request that
   //  the PushTxn be aborted if possible. This is done in the event of
   //  a writer conflicting with PusheeTxn. Inconsistent readers set
   //  this to CLEANUP_TXN to determine whether dangling intents
   //  may be resolved.
-  optional .cockroach.proto.PushTxnType push_type = 3;
+  optional .cockroach.proto.PushTxnType push_type = 4;
   // Range lookup indicates whether we're pushing a txn because of an
   //  intent encountered while servicing an internal range lookup
-  //  request. See notes in InternalLookupRangeRequest.
-  optional bool range_lookup = 4;
+  //  request. See notes in InternalRangeLookupRequest.
+  optional bool range_lookup = 5;
 }
 
 // An InternalPushTxnResponse is the return value from the

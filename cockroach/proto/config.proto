@@ -17,8 +17,6 @@ message Attributes {
 message Replica {
   optional int32 node_id = 1;
   optional int32 store_id = 2;
-  // Combination of node & store attributes.
-  optional .cockroach.proto.Attributes attrs = 3;
 }
 
 // RangeDescriptor is the value stored in a range metadata key.

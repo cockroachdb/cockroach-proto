@@ -291,7 +291,9 @@ message ResponseUnion {
 //  parallel, or if applicable (based on write-only commands and
 //  range-locality), as a single update.
 //  The RequestHeader should contain the Key of the first request
-//  in the batch.
+//  in the batch. It also contains the transaction itself; individual
+//  calls must not have transactions specified. The same applies to
+//  the User and UserPriority fields.
 message BatchRequest {
   optional .cockroach.proto.RequestHeader header = 1;
   repeated .cockroach.proto.RequestUnion requests = 2;
