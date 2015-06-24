@@ -5,7 +5,7 @@ package cockroach.proto;
 option go_package = "proto";
 
 // TimeSeriesQueryAggregator describes a set of aggregation functions which are
-//  applied to data points before returning them as part of a query. 
+//  applied to data points before returning them as part of a query.
 //  Cockroach does not store data points at full fidelity, instead "downsampling"
 //  data points into fixed-length sample periods. The value returned for each
 //  sample period is equivalent to applying the supplied aggregator function to

@@ -212,7 +212,6 @@ message InternalLeaderLeaseResponse {
 //  Non-internal values added to RequestUnion must be added here.
 message InternalRequestUnion {
    oneof value {
-    .cockroach.proto.ContainsRequest contains = 1;
     .cockroach.proto.GetRequest get = 2;
     .cockroach.proto.PutRequest put = 3;
     .cockroach.proto.ConditionalPutRequest conditional_put = 4;
@@ -231,7 +230,6 @@ message InternalRequestUnion {
 //  Non-internal values added to ResponseUnion must be added here.
 message InternalResponseUnion {
    oneof value {
-    .cockroach.proto.ContainsResponse contains = 1;
     .cockroach.proto.GetResponse get = 2;
     .cockroach.proto.PutResponse put = 3;
     .cockroach.proto.ConditionalPutResponse conditional_put = 4;
@@ -288,7 +286,6 @@ message ReadWriteCmdResponse {
 message InternalRaftCommandUnion {
    oneof value {
     // Non-batched external requests. This section is the same as RequestUnion.
-    .cockroach.proto.ContainsRequest contains = 1;
     .cockroach.proto.GetRequest get = 2;
     .cockroach.proto.PutRequest put = 3;
     .cockroach.proto.ConditionalPutRequest conditional_put = 4;
@@ -413,6 +410,8 @@ message RaftSnapshotData {
     optional bytes key = 1;
     optional bytes value = 2;
   }
-  repeated .cockroach.proto.RaftSnapshotData.KeyValue KV = 1;
+  // The latest RangeDescriptor
+  optional .cockroach.proto.RangeDescriptor range_descriptor = 1;
+  repeated .cockroach.proto.RaftSnapshotData.KeyValue KV = 2;
 }
 

@@ -93,11 +93,7 @@ message TransactionStatusError {
 //  immediately. If Resolved is false, the client should back off and
 //  retry.
 message WriteIntentError {
-  message Intent {
-    optional bytes key = 1;
-    optional .cockroach.proto.Transaction txn = 2;
-  }
-  repeated .cockroach.proto.WriteIntentError.Intent intents = 1;
+  repeated .cockroach.proto.Intent intents = 1;
   optional bool resolved = 2;
 }
 

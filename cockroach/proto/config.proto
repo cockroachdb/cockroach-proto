@@ -73,20 +73,19 @@ message ZoneConfig {
   optional .cockroach.proto.GCPolicy gc = 4;
 }
 
-// RangeTree holds the root node and size of the range tree.
+// TODO(bram): this comment has rotted, there is no size.
+//  RangeTree holds the root node and size of the range tree.
 message RangeTree {
   optional bytes root_key = 1;
 }
 
 // RangeTreeNode holds the configuration for each node of the Red-Black Tree that references all ranges.
 message RangeTreeNode {
-  // Using gogoproto's marshaler is needed here as there is a bug in the default
-  //  marshalling using reflection that does not handle the Key custom type as
-  //  nullable correctly.
   optional bytes key = 1;
   // Color is black if true, red if false.
   optional bool black = 2;
-  // If the parent key is null, this is the root node.
+  // TODO(bram): this comment has rotted, parent key is not nullable
+  //  If the parent key is null, this is the root node.
   optional bytes parent_key = 3;
   optional bytes left_key = 4;
   optional bytes right_key = 5;
