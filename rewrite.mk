@@ -8,9 +8,12 @@ include cockroach/build/protobuf.mk
 
 PROTO_REWRITE=cockroach-proto/.vendor/bin/proto-rewrite
 
+# Only generate protos that are intended to be used by clients.
+CLIENT_PROTOS=$(filter ./cockroach/sql/driver/%,$(GO_PROTOS))
+
 .PHONY: build
 build:
-	for dir in $(sort $(dir $(GO_PROTOS))); do \
+	for dir in $(sort $(dir $(CLIENT_PROTOS))); do \
 		mkdir -p cockroach-proto/$$dir; \
 		$(PROTO_REWRITE) --protoc=$(PROTOC) \
 			--proto_path=.:$(GOGOPROTO_PATH):$(COREOS_PATH) \
